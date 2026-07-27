@@ -1,0 +1,102 @@
+aid: jemena
+url: https://raw.githubusercontent.com/api-evangelist/jemena/refs/heads/main/apis.yml
+name: Jemena
+kind: company
+description: >-
+  Jemena is an Australian energy infrastructure owner-operator, headquartered in Melbourne and owned by
+  SGSP (Australia) Assets — 60% State Grid Corporation of China, 40% Singapore Power. It sits on the
+  poles-and-pipes side of the value chain, not the retail side: it runs the Jemena Electricity Network
+  distributing power to north and north-west Melbourne, the Jemena Gas Network distributing gas across
+  New South Wales, the Eastern, Queensland and Northern Gas Pipelines, the Colongra storage facility,
+  and holds 50% of ActewAGL's ACT distribution networks. Its API posture is the inverse of what the
+  Australian Consumer Data Right story would predict. Jemena is NOT a designated CDR energy data holder
+  — the CDR energy designation covers retailers as primary data holders and AEMO as secondary data
+  holder, and the live CDR Register energy brand list contains 84 brands, all of them retailers and none
+  of them a distribution network. There is consequently no Jemena consumer usage or billing API, and the
+  Electricity Outlook customer smart-meter portal no longer resolves in DNS. Jemena also publishes no
+  open market or network data API; its outage map is CloudFront geo-restricted and its Daily Gas Data
+  product is a paid annual email subscription. What Jemena does run is a real, live, standards-conformant
+  machine-to-machine API for grid control: the JEN CSIP-AUS Utility Server, an IEEE 2030.5 / SEP2
+  implementation of the CSIP-AUS (SA TS 5573) profile, stood up to satisfy the Victorian Government's
+  emergency backstop mandate for remotely curtailable rooftop solar. It is fully documented in public PDF
+  handbooks, has published staging and production base URIs, and is gated behind Jemena-issued mTLS PKI
+  certificates, IP whitelisting and an OEM conformance-testing programme.
+image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/jemena.png
+tags:
+- Energy
+- Australia
+- Utilities
+- Electricity
+- Gas
+- Grid
+- Network Distributor
+- DER
+- Solar
+- Smart Metering
+- Demand Response
+- IEEE 2030.5
+created: '2026-07-27'
+modified: '2026-07-27'
+specificationVersion: '0.19'
+apis:
+- aid: jemena:jemena-csip-aus-utility-server
+  name: Jemena CSIP-AUS Utility Server (IEEE 2030.5)
+  description: >-
+    Jemena Electricity Networks' CSIP-AUS compliant control server — an IEEE 2030.5 (Smart Energy Profile 2.0)
+    implementation of the Common Smart Inverter Profile Australia (SA TS 5573) — used to discover, monitor and
+    remotely curtail small and medium embedded generation (rooftop solar, batteries, VPP fleets) on the Jemena
+    Victorian distribution network under the Victorian Government's emergency backstop mandate. Clients connect
+    either as an aggregator/cloud gateway or as a direct-connected device. The XML resource tree is documented
+    publicly in Jemena's OEM technical guide handbook: device capability (/sep2/dcap), time (/sep2/tm), end
+    device list (/sep2/edev), function set assignments (/sep2/fsagrp/{id}/fsa), DER programs and controls
+    (/sep2/grp/{id}/derp, /sep2/derp/{id}/dderc, /sep2/derp/{id}/derc), DER status/capability/settings/availability
+    (PUT /sep2/der/{id}/ders, /dercap, /derg, /dera), and mirror usage points and meter readings (/sep2/mup,
+    /sep2/upt/{id}/mr/{id}). Access is not self-serve — an OEM or aggregator must submit a Certificate Signing
+    Request and IP addresses to whitelist, receive a Jemena-signed IEEE 2030.5 PKI client certificate, pass
+    connectivity, discovery and functional tests in the staging environment, then be onboarded to production and
+    added to Jemena's CSIP-AUS Approved Listing. Verified live on 2026-07-27: the documented production host
+    resolves to an AWS ap-southeast-2 load balancer and GET /sep2/dcap returns HTTP 500 from nginx when called
+    without a client certificate, consistent with a mutually-authenticated TLS endpoint.
+  humanURL: https://www.jemena.com.au/electricity/solar-connections/victoria-emergency-backstop-mechanism/emergency-backstop-mechanism-documents/
+  baseURL: https://sep2.aws.jemena.com.au:8443/sep2
+  tags:
+  - DER
+  - Solar
+  - Grid
+  - IEEE 2030.5
+  - CSIP-AUS
+  - Demand Response
+  - Smart Inverters
+  properties:
+  - type: Documentation
+    url: https://www.jemena.com.au/siteassets/asset-folder/documents/electricity/embedded-generation/jen-oem-technical-guide_handbook_v1.0.1-final.pdf
+  - type: Documentation
+    url: https://www.jemena.com.au/siteassets/asset-folder/documents/electricity/embedded-generation/embedded-generation-emergency-backstop-requirements_public_01-12-2025.pdf
+  - type: Documentation
+    url: https://www.jemena.com.au/siteassets/asset-folder/documents/electricity/embedded-generation/installer-csip-aus-commissioning-test-procedure_public_22052024.pdf
+  - type: Documentation
+    url: https://www.jemena.com.au/electricity/solar-connections/victoria-emergency-backstop-mechanism/
+  - type: Documentation
+    url: https://www.jemena.com.au/electricity/solar-and-other-technologies/jemena-approved-list-of-inverters/
+  - type: Specification
+    url: https://www.csipaus.org/about
+common:
+- type: Website
+  url: https://www.jemena.com.au/
+- type: Documentation
+  url: https://www.jemena.com.au/electricity/solar-connections/victoria-emergency-backstop-mechanism/emergency-backstop-mechanism-documents/
+- type: LinkedIn
+  url: https://www.linkedin.com/company/jemena
+- type: SignUp
+  url: https://myportal.jemena.com.au/
+- type: Portal
+  url: https://myservices.jemena.com.au/edp/login/auth
+- type: StatusPage
+  url: https://poweroutages.jemena.com.au/
+- type: Support
+  url: https://www.jemena.com.au/help-support/
+- type: PrivacyPolicy
+  url: https://www.jemena.com.au/about-us/privacy-policy/
+maintainers:
+- FN: Kin Lane
+  email: kin@apievangelist.com

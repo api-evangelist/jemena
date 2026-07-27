@@ -1,0 +1,364 @@
+aid: jemena
+name: Jemena
+review:
+  question: >-
+    Does the Australian Consumer Data Right — the statutory data mandate that produced a byte-for-byte
+    identical API across fifty Australian banks — reach Jemena, an energy network distributor, and if not,
+    what machine-readable surface does Jemena actually operate?
+  answer: >-
+    No. CDR energy does not designate distribution network service providers as data holders, and Jemena
+    is absent from the live CDR Register energy brand list. Jemena nonetheless operates a real, live,
+    standards-conformant API — but it is a grid-control interface driven by a completely different Victorian
+    mandate, not a consumer data right.
+  date: '2026-07-27'
+  reviewer: API Evangelist
+  homeMarket: Australia
+  tier: network-distributor
+
+mandate:
+  regime: other
+  regimeVerbatim: >-
+    The obligation that produced Jemena's only public API is the Victorian Government's emergency backstop
+    mechanism for embedded generation, made by Order in Council and published in the Victoria Government
+    Gazette (GG2025S553, 9 October 2025, revoking the earlier GG2024S031 and GG2024S336 Orders, which are
+    cited by page number inside Jemena's own public requirements document). It compels every Victorian
+    electricity distribution network to ensure that all new, replacement and upgraded solar systems up to
+    and including 200 kVA are "emergency backstop enabled" — that is, remotely curtailable over an active
+    communications link to the distributor's systems. This is an infrastructure/device-control mandate.
+    It is NOT a consumer data right: it confers no right on a consumer to obtain or share their own data,
+    and it is recorded here as `other` rather than `smart-meter-infrastructure` because it governs
+    inverters and DER, not metering infrastructure.
+  status: live-implemented
+  statusEvidence: >-
+    Verified, not claimed. (1) Jemena publishes a 3-part public technical document set on its own website
+    describing the server: the JEN OEM technical guide handbook v1.0 (12 June 2025, HTTP 200, 2,272,777
+    bytes), the Embedded Generation Emergency Backstop Requirements (public, 1 December 2025, HTTP 200),
+    and the Installer CSIP-AUS Commissioning Test Procedure (public, 22 May 2024, HTTP 200). (2) The
+    handbook names both environments explicitly — "JEN Staging https://sep2-e2e.aws.jemena.com.au:8444"
+    and "JEN production https://sep2.aws.jemena.com.au:8443" — and documents the resource tree operation
+    by operation. (3) Both hosts resolve in DNS to real AWS Network Load Balancers in ap-southeast-2
+    (sep2.aws.jemena.com.au -> gsmd-int-prod-01-nlb-680afe73530cbb36.elb.ap-southeast-2.amazonaws.com;
+    sep2-e2e.aws.jemena.com.au -> gsmd-int-nonprod-01-nlb-c1e23f301554325d.elb.ap-southeast-2.amazonaws.com).
+    (4) An anonymous GET https://sep2.aws.jemena.com.au:8443/sep2/dcap on 2026-07-27 completes a TLS
+    handshake against a private-PKI certificate (curl ssl_verify_result=19, self-signed certificate in
+    chain — expected for the IEEE 2030.5 SERCA/MICA hierarchy) and, with verification disabled, returns
+    HTTP 500 from nginx (170 bytes) because no client certificate was presented. That is a live
+    mutually-authenticated endpoint, not a landing page. The staging port 8444 times out from outside
+    Australia, consistent with the documented IP-whitelisting control. (5) Jemena's public "Approved List
+    of Inverters" page (HTTP 200) states that from 1 July 2025 only inverters on Jemena's own CSIP-AUS
+    Approved Listing may connect and commission, and that non-conforming applications are rejected —
+    i.e. the server is not a pilot, it is load-bearing in the connection process.
+  cdrEnergy:
+    appliesToThisOrganization: false
+    status: not-applicable
+    evidence: >-
+      The CDR energy designation places obligations on energy RETAILERS as primary data holders and on
+      AEMO as secondary data holder, under a gateway model in which AEMO intermediates between data
+      holders and accredited data recipients. Distribution network service providers such as Jemena are
+      not designated data holders. This was checked against primary machine-readable evidence rather
+      than prose: an anonymous GET of the public CDR Register endpoint
+      https://api.cdr.gov.au/cdr-register/v1/energy/data-holders/brands/summary (x-v: 1) returned HTTP 200
+      and 35,419 bytes on 2026-07-27, listing 84 designated energy data holder brands. Every one is a
+      retailer or retail brand (Origin, AGL, EnergyAustralia, Alinta, Amber, Red, Momentum, Shell Energy,
+      Telstra Energy, Tesla Energy Ventures, and so on). A case-insensitive search of the full response
+      for "jemena" returned zero matches. No distribution network appears anywhere in the list, and
+      Jemena publishes no CDR public base URI.
+    note: >-
+      This is the control result for the replicability question. The statutory machinery transplanted from
+      banking to energy did produce a uniform, register-listed, standards-conformant retailer API estate —
+      but it stops at the retail boundary. The company that physically owns the wires and the smart meter
+      data is outside the mandate entirely. A mandate is not a sector.
+  gasCoverage:
+    note: >-
+      CDR energy covers electricity only. Jemena's gas distribution business (Jemena Gas Networks NSW) and
+      its gas transmission pipelines fall under no consumer data mandate at all.
+
+dataStandard:
+  name: CSIP-AUS (Common Smart Inverter Profile Australia), SA TS 5573, profiling IEEE 2030.5 / SEP2
+  version: >-
+    Jemena's requirements document cites the CSIP-AUS Technical Standard SA TS 5573 and states that
+    CSIP-AUS "implements 20 or more of the 30+ IEEE 2030.5 function sets and is the mandated end-state
+    solution". The OEM handbook is version 1.0 dated 12 June 2025. Payloads use the CSIP-AUS XML namespace
+    https://csipaus.org/ns alongside the IEEE 2030.5 schema.
+  relatedStandards:
+  - AS/NZS 4777.2:2020 (inverter requirements; Clean Energy Council approved-inverter listing is a precondition)
+  - IEEE 2030.5 Smart Energy Profile Application Protocol
+  - SEP2 PKI hierarchy (SERCA root, MICA/MCA intermediate, device certificates, LFDI/SFDI identifiers)
+  notFound:
+  - Green Button / ESPI — not referenced anywhere on jemena.com.au; Green Button is not an Australian standard
+  - OCPP / OCPI — no EV charging API published
+  - OpenADR — not referenced
+  - IEC CIM 61968/61970 — not referenced in any public Jemena developer material
+  - CDR Consumer Data Standards (energy) — not implemented, because Jemena is not a data holder
+
+consumerVsMarketDataSplit:
+  consumerDataApi:
+    available: false
+    finding: >-
+      Jemena publishes no API through which a third party can obtain an individual customer's usage or
+      billing data. Under CDR that job belongs to the customer's retailer plus AEMO, not to the
+      distributor. Jemena's historic customer-facing smart meter portal, Electricity Outlook, is gone:
+      electricityoutlook.jemena.com.au returns NXDOMAIN from a public resolver on 2026-07-27 even though
+      it is still widely linked and indexed. The surviving customer and trade surfaces are login-only —
+      myportal.jemena.com.au (HTTP 200, login wall; /api and /.well-known/openid-configuration both
+      HTTP 403) and myservices.jemena.com.au/edp/login/auth (HTTP 200, "Connect and manage my electricity",
+      a Spring Security form login for connection applications with /edp/registration self-registration
+      for trade users). Neither documents an API.
+  marketDataOpen:
+    available: false
+    finding: >-
+      Jemena runs no open data portal and publishes no anonymous grid, network or market data API. There
+      is no data., opendata., developer., developers. or docs. subdomain (all NXDOMAIN). api.jemena.com.au
+      resolves via Akamai but returns HTTP 503 on /, /openapi.json, /swagger.json and /health — an
+      internal edge, not a public API. The outage map at poweroutages.jemena.com.au returns HTTP 403 from
+      CloudFront with "The Amazon CloudFront distribution is configured to block access from your country",
+      so it is geo-restricted to Australia and exposes no documented feed. A CKAN package_search for
+      "Jemena" on data.gov.au returned HTTP 200 with 10 results, none of them a Jemena dataset (all NSW
+      Government gazettes and unrelated annual reports); the same search on discover.data.vic.gov.au
+      returned HTTP 200 with a count of 0. The one commercial data product, "Daily Gas Data", is delivered
+      by daily EMAIL on an annual subscription arranged through rfs@jemena.com.au — no API, no portal, no
+      documented format.
+  interpretation: >-
+    The split for this organization is not "open market data, closed consumer data" — it is closed on both.
+    Jemena's only real API is a third thing the two-speed model does not capture: a mandated,
+    machine-to-machine CONTROL plane that reads DER telemetry and writes curtailment setpoints. Data flows
+    to Jemena and commands flow out; nothing flows to the public. Notably, this makes Jemena a counter-example
+    to the UK/European DNO pattern, where network distributors are often the most open party in the sector.
+
+accessGate:
+  gate: application-approval
+  gated: true
+  whatADeveloperMustDo: >-
+    There is no signup form and no self-serve key. The documented onboarding path in the JEN OEM technical
+    guide handbook is: (1) be an inverter OEM, gateway manufacturer or aggregator whose product is already
+    on the Clean Energy Council list of AS/NZS 4777.2:2020 CSIP-AUS compliant inverters; (2) generate a
+    private key and submit a Certificate Signing Request plus the IP addresses to whitelist to Jemena by
+    email or file share (aggregator model), or an MCA intermediate-CA CSR plus a CA Naming Form
+    (direct-connected device model); (3) receive back a Jemena-signed certificate, an aggregator LFDI and
+    a registration PIN (the handbook publishes the non-production PIN as 111115); (4) pass a connectivity
+    test, device registration, a discovery test and out-of-band functional tests against the staging
+    Utility Server; (5) repeat certificate issuance and testing in production; (6) on success Jemena adds
+    the client to the public approved OEM list and to Jemena's CSIP-AUS Approved Listing. From 1 July 2025
+    inverters not on that listing cannot connect. The handbook also warns that losing the private key
+    requires reapplication with a fee "up to $3000 USD" borne by the client.
+  notSelfServe: true
+  developerPortal: none-published
+  developerPortalNote: >-
+    Nothing named developer/API portal exists. The nearest equivalent is a static page of PDFs at
+    /electricity/solar-connections/victoria-emergency-backstop-mechanism/emergency-backstop-mechanism-documents/
+    (HTTP 200). Beware the homonym: jemena.com.au/gas/developers and /electricity/trade-developers/ both
+    return HTTP 200 but are for PROPERTY developers and trades applying for gas and electricity connections,
+    not software developers.
+
+authModel:
+  scheme: Mutual TLS (client certificates) over the IEEE 2030.5 SEP2 PKI, plus source-IP whitelisting
+  detail: >-
+    Certificates are signed and issued by Jemena (JEN) from a CSR. The handbook documents a native IEEE
+    2030.5 root CA device certificate profile, an MCA/MICA intermediate CA certificate profile, SERCA as
+    the Smart Energy Root Certificate Authority, and LFDI (Long Form Device Identifier) derivation
+    requirements for both physical and virtual end devices. Device identity on the wire is the LFDI.
+    Registration additionally uses a PIN; in-band registration is supported only for the aggregator model,
+    out-of-band registration otherwise. Jemena's Utility Server explicitly does not support POST /ntfy
+    (IEEE 2030.5 subscription/notification), so clients poll — the documented steady-state poll and post
+    rate is 300 seconds, tightened to 60 seconds during an event.
+  oidc:
+    probed: true
+    result: >-
+      No anonymous OpenID Connect discovery document is served. GET
+      https://www.jemena.com.au/.well-known/openid-configuration returned HTTP 404 and
+      https://myportal.jemena.com.au/.well-known/openid-configuration returned HTTP 403.
+
+documentedOperations:
+  note: >-
+    Harvested verbatim from the public JEN OEM technical guide handbook v1.0. Paths are relative to the
+    base URI https://sep2.aws.jemena.com.au:8443 (production) or https://sep2-e2e.aws.jemena.com.au:8444
+    (staging). No OpenAPI, WSDL or machine-readable schema is published by Jemena; the contract is prose
+    plus IEEE 2030.5/CSIP-AUS XML schemas maintained by third parties.
+  operations:
+  - GET /sep2/dcap
+  - GET /sep2/tm
+  - GET /sep2/edev
+  - POST /sep2/edev
+  - PUT /sep2/edev/{x}/cp
+  - GET /sep2/edev/{x}/der
+  - GET /sep2/fsagrp/{id}/fsa?s=0&l=255
+  - GET /sep2/grp/{id}/derp?s=0&l=255
+  - GET /sep2/derp/{x}/dderc
+  - GET /sep2/derp/{x}/derc
+  - PUT /sep2/der/{x}/ders
+  - PUT /sep2/der/{x}/dercap
+  - PUT /sep2/der/{x}/derg
+  - PUT /sep2/der/{x}/dera
+  - GET /sep2/mup
+  - GET /sep2/mup/{id}
+  - POST /sep2/mup
+  - POST /sep2/mup/{id}
+  - DELETE /sep2/mup/{id}
+  - GET /sep2/upt/{id}/mr/{id}
+  - GET /sep2/mr/{id}
+  - POST /sep2/rsps/{id}/rsp
+
+probes:
+  date: '2026-07-27'
+  note: Every URL below was requested anonymously with a browser user-agent; status recorded as returned.
+  results:
+  - url: https://jemena.com.au/
+    status: 200
+    note: Redirects to https://www.jemena.com.au/
+  - url: https://www.jemena.com.au/
+    status: 200
+  - url: https://developer.jemena.com.au/
+    status: 000
+    note: NXDOMAIN
+  - url: https://developers.jemena.com.au/
+    status: 000
+    note: NXDOMAIN
+  - url: https://docs.jemena.com.au/
+    status: 000
+    note: NXDOMAIN
+  - url: https://data.jemena.com.au/
+    status: 000
+    note: NXDOMAIN
+  - url: https://opendata.jemena.com.au/
+    status: 000
+    note: NXDOMAIN
+  - url: https://electricityoutlook.jemena.com.au/
+    status: 000
+    note: NXDOMAIN — the former customer smart-meter portal is decommissioned despite still being widely linked
+  - url: https://api.jemena.com.au/
+    status: 503
+    note: Resolves via Akamai (api.jemena.com.au.edgekey.net); no public API
+  - url: https://api.jemena.com.au/openapi.json
+    status: 503
+  - url: https://api.jemena.com.au/swagger.json
+    status: 503
+  - url: https://api.jemena.com.au/health
+    status: 503
+  - url: https://www.jemena.com.au/openapi.json
+    status: 404
+  - url: https://www.jemena.com.au/swagger.json
+    status: 404
+  - url: https://www.jemena.com.au/api-docs
+    status: 404
+  - url: https://www.jemena.com.au/developers
+    status: 404
+  - url: https://www.jemena.com.au/api
+    status: 404
+  - url: https://www.jemena.com.au/docs
+    status: 404
+  - url: https://www.jemena.com.au/data
+    status: 404
+  - url: https://www.jemena.com.au/.well-known/openid-configuration
+    status: 404
+  - url: https://www.jemena.com.au/robots.txt
+    status: 200
+    note: Only disallows /episerver/ and /utils/; no API paths referenced
+  - url: https://www.jemena.com.au/sitemap.xml
+    status: 200
+    note: 436 URLs; zero developer, API, open data or specification pages
+  - url: https://myportal.jemena.com.au/
+    status: 200
+    note: Customer/trade login wall, not a developer portal
+  - url: https://myportal.jemena.com.au/api
+    status: 403
+  - url: https://myportal.jemena.com.au/.well-known/openid-configuration
+    status: 403
+  - url: https://myservices.jemena.com.au/edp/login/auth
+    status: 200
+    note: >-
+      Titled "Connect and manage my electricity" — a Spring Security form login for connection applications
+  - url: https://poweroutages.jemena.com.au/
+    status: 403
+    note: CloudFront country block — "configured to block access from your country"
+  - url: https://www.jemena.com.au/gas/developers
+    status: 200
+    note: Redirects to /gas/trade-and-developers/ — PROPERTY developers, not software developers
+  - url: https://www.jemena.com.au/electricity/trade-developers/
+    status: 200
+    note: Trades and property developers, not software developers
+  - url: https://www.jemena.com.au/gas/commercial-gas-connections/commercial-and-industrial/daily-gas-data-product/
+    status: 200
+    note: Daily/hourly/monthly gas usage reports delivered by EMAIL on annual subscription via rfs@jemena.com.au
+  - url: https://www.jemena.com.au/electricity/solar-connections/victoria-emergency-backstop-mechanism/emergency-backstop-mechanism-documents/
+    status: 200
+    note: The de facto developer documentation index — five public PDFs
+  - url: https://www.jemena.com.au/electricity/solar-and-other-technologies/jemena-approved-list-of-inverters/
+    status: 200
+  - url: https://www.jemena.com.au/siteassets/asset-folder/documents/electricity/embedded-generation/jen-oem-technical-guide_handbook_v1.0.1-final.pdf
+    status: 200
+    note: 2,272,777 bytes — the API contract, in prose
+  - url: https://www.jemena.com.au/siteassets/asset-folder/documents/electricity/embedded-generation/embedded-generation-emergency-backstop-requirements_public_01-12-2025.pdf
+    status: 200
+    note: 1,125,765 bytes
+  - url: https://www.jemena.com.au/siteassets/asset-folder/documents/electricity/embedded-generation/installer-csip-aus-commissioning-test-procedure_public_22052024.pdf
+    status: 200
+    note: 645,310 bytes
+  - url: https://sep2.aws.jemena.com.au:8443/sep2/dcap
+    status: 500
+    note: >-
+      Live production CSIP-AUS Utility Server. TLS handshake succeeds against a private-PKI certificate
+      (ssl_verify_result=19). With verification disabled, nginx returns HTTP 500 (170 bytes) because no
+      mTLS client certificate was presented. Host resolves to
+      gsmd-int-prod-01-nlb-680afe73530cbb36.elb.ap-southeast-2.amazonaws.com.
+  - url: https://sep2-e2e.aws.jemena.com.au:8444/sep2/dcap
+    status: 000
+    note: >-
+      Staging. Connection timed out after 45s from outside Australia, consistent with the documented client
+      IP whitelisting. Host resolves to gsmd-int-nonprod-01-nlb-c1e23f301554325d.elb.ap-southeast-2.amazonaws.com.
+  - url: https://api.cdr.gov.au/cdr-register/v1/energy/data-holders/brands/summary
+    status: 200
+    note: >-
+      Public CDR Register, 35,419 bytes, 84 designated energy data holder brands, all retailers. Zero
+      matches for "jemena". Primary evidence that CDR energy does not reach distribution networks.
+  - url: https://data.gov.au/data/api/3/action/package_search?q=Jemena
+    status: 200
+    note: 10 results, none a Jemena dataset
+  - url: https://discover.data.vic.gov.au/api/3/action/package_search?q=Jemena
+    status: 200
+    note: count 0
+
+artifacts:
+  openapiHarvested: false
+  specsCount: 0
+  note: >-
+    No machine-readable API description of any kind is published by Jemena. The Utility Server contract
+    exists only as PDF prose over externally-maintained IEEE 2030.5 / CSIP-AUS XML schemas. Nothing was
+    fabricated or derived into openapi/; the operation list above is a verbatim harvest of the paths
+    printed in Jemena's own public handbook, recorded here rather than dressed up as a specification.
+
+sources:
+- url: https://www.jemena.com.au/
+  type: Website
+  note: Corporate site; electricity and gas distribution plus pipelines
+- url: https://en.wikipedia.org/wiki/Jemena
+  type: Reference
+  note: Ownership (60% State Grid Corporation of China / 40% Singapore Power via SGSP Australia Assets), assets, ~1,300 staff, Melbourne HQ
+- url: https://www.cdr.gov.au/rollout/cdr-energy-sector
+  type: Regulation
+  note: CDR energy sector rollout; retailers as primary data holders, AEMO as secondary under the gateway model
+- url: https://www.aemo.com.au/energy-systems/electricity/cdr-at-aemo/about-cdr
+  type: Regulation
+  note: AEMO's designated secondary data holder role
+- url: https://api.cdr.gov.au/cdr-register/v1/energy/data-holders/brands/summary
+  type: APIReference
+  note: Machine-readable proof of who is and is not a designated energy data holder
+- url: https://www.csipaus.org/about
+  type: Specification
+  note: CSIP-AUS, the Australian IEEE 2030.5 profile Jemena implements
+- url: https://www.jemena.com.au/siteassets/asset-folder/documents/electricity/embedded-generation/jen-oem-technical-guide_handbook_v1.0.1-final.pdf
+  type: Documentation
+  note: Base URIs, operations, PKI, onboarding, poll/post rates
+- url: https://www.jemena.com.au/siteassets/asset-folder/documents/electricity/embedded-generation/embedded-generation-emergency-backstop-requirements_public_01-12-2025.pdf
+  type: Documentation
+  note: Victorian Order in Council citations, CSIP-AUS Approved Listing policy, export limits
+
+conclusion: >-
+  Jemena is the clean negative control for the replicability question. Australia did transplant the exact
+  statutory machinery that standardised its banks into energy, and it worked — 84 retailer brands sit in a
+  live public register behind conformant base URIs. But the mandate was scoped to the retail relationship,
+  so the party that owns the wires and sees every meter is outside it. What Jemena publishes instead was
+  produced by a completely different Victorian instrument aimed at grid stability, and that instrument
+  delivered a genuinely live, standards-conformant, verifiable API — CSIP-AUS over IEEE 2030.5 — that no
+  consumer or third-party developer can use. Two mandates, two real implementations, zero open data. The
+  lesson is that mandates are replicable but they replicate exactly what they were scoped to, and scope is
+  where the value goes.
