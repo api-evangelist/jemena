@@ -1,0 +1,135 @@
+generated: '2026-07-27'
+method: searched
+source: https://www.jemena.com.au/siteassets/asset-folder/documents/electricity/embedded-generation/jen-oem-technical-guide_handbook_v1.0.1-final.pdf
+also_source:
+- https://www.jemena.com.au/siteassets/asset-folder/documents/electricity/embedded-generation/embedded-generation-emergency-backstop-requirements_public_01-12-2025.pdf
+- https://www.csipaus.org/about
+api: jemena:jemena-csip-aus-utility-server
+note: >-
+  Jemena's only public API is a standards-profile implementation, so conformance here is unusually
+  concrete: the whole contract is an external standard. What Jemena does NOT claim is equally
+  informative — no SOC 2 / ISO 27001 / PCI style certification programme is published anywhere on
+  jemena.com.au (probed 2026-07-27), so no Compliance pointer is claimed.
+standards:
+- id: ieee-2030.5
+  name: IEEE 2030.5 Smart Energy Profile Application Protocol (SEP2)
+  conforms: true
+  evidence: >-
+    The JEN Utility Server is an IEEE 2030.5 server. Resource tree, XML namespace
+    urn:ieee:std:2030.5:ns, LFDI/SFDI identifiers, DER function sets, Mirror Metering function set and
+    the SEP2 PKI hierarchy are all documented operation-by-operation in the public OEM handbook.
+  partial:
+    subscription_notification: >-
+      Not implemented — Jemena's Utility Server does not support POST /ntfy, so clients poll rather
+      than subscribe.
+    version_tag: Responses do not include the <version> tag.
+- id: csip-aus
+  name: Common Smart Inverter Profile Australia (CSIP-AUS), SA TS 5573
+  conforms: true
+  evidence: >-
+    Jemena's Embedded Generation Emergency Backstop Requirements states CSIP-AUS "implements 20 or
+    more of the 30+ IEEE 2030.5 function sets and is the mandated end-state solution". Payloads carry
+    the CSIP-AUS namespace https://csipaus.org/ns alongside the IEEE 2030.5 schema, and Jemena
+    operates a CSIP-AUS Approved Listing of conformance-tested clients.
+  version: SA TS 5573
+- id: as-nzs-4777.2-2020
+  name: AS/NZS 4777.2:2020 grid-connection of inverter energy systems
+  conforms: true
+  role: precondition
+  evidence: >-
+    A client's product must already be on the Clean Energy Council list of AS/NZS 4777.2:2020
+    CSIP-AUS compliant inverters before Jemena will issue a certificate.
+- id: x509-mutual-tls
+  name: X.509 client-certificate mutual TLS (SEP2 SERCA / MICA PKI)
+  conforms: true
+  evidence: >-
+    Handbook Section 10 documents the PKI structure, the native IEEE 2030.5 root CA device certificate
+    profile and the MCA intermediate CA certificate profile. Verified live: anonymous TLS handshake to
+    sep2.aws.jemena.com.au:8443 returns a private-PKI chain and HTTP 500 without a client certificate.
+- id: vic-emergency-backstop
+  name: Victorian emergency backstop mechanism (Order in Council, Victoria Government Gazette GG2025S553, 9 October 2025)
+  conforms: true
+  kind: regulatory-mandate
+  evidence: >-
+    Jemena's public requirements document cites GG2025S553 (revoking the earlier GG2024S031 and
+    GG2024S336 Orders) as the instrument compelling every Victorian electricity distribution network to
+    ensure new, replacement and upgraded solar systems up to and including 200 kVA are remotely
+    curtailable over an active communications link.
+- id: iana-pen
+  name: IANA Private Enterprise Number
+  conforms: true
+  scope: aggregator model only
+  evidence: >-
+    Aggregators must use their IANA-issued PEN as the last 8 hex digits (leading zeros) of every
+    virtual device LFDI they mint.
+- id: cdr-energy
+  name: Australian Consumer Data Right — energy sector data standards
+  conforms: false
+  evidence: >-
+    Jemena is not a designated CDR energy data holder. An anonymous GET of
+    https://api.cdr.gov.au/cdr-register/v1/energy/data-holders/brands/summary (x-v: 1) returned HTTP
+    200 and 35,419 bytes on 2026-07-27 listing 84 designated energy brands, all retailers; a
+    case-insensitive search for "jemena" returned zero matches. CDR energy designates retailers as
+    primary data holders and AEMO as secondary; distribution network service providers are outside it.
+- id: rfc9457-problem-details
+  name: RFC 9457 Problem Details for HTTP APIs
+  conforms: false
+  evidence: Errors are bare HTTP status codes with application/sep+xml bodies; no problem+json is used.
+- id: oauth2
+  name: OAuth 2.0
+  conforms: false
+  evidence: No authorization server, token endpoint or scope surface is published. Authentication is mutual TLS.
+- id: openid-connect
+  name: OpenID Connect
+  conforms: false
+  evidence: >-
+    GET https://www.jemena.com.au/.well-known/openid-configuration returned 404 and
+    https://myportal.jemena.com.au/.well-known/openid-configuration returned 403 on 2026-07-27.
+- id: openapi
+  name: OpenAPI
+  conforms: false
+  evidence: >-
+    No OpenAPI, Swagger, WADL or other machine-readable description is published. Probed 2026-07-27:
+    www.jemena.com.au/openapi.json 404, /swagger.json 404, /api-docs 404; api.jemena.com.au/openapi.json
+    503; sep2.aws.jemena.com.au:8443/openapi.json, /swagger.json, /sep2/openapi.json, /api-docs, /docs
+    all 500 (mTLS gate). The contract is prose plus third-party-maintained IEEE 2030.5 / CSIP-AUS XSDs.
+- id: asyncapi
+  name: AsyncAPI
+  conforms: false
+  evidence: >-
+    There is no event surface to describe. Jemena does not support the IEEE 2030.5
+    subscription/notification function set (POST /ntfy) and publishes no webhooks; the interaction
+    model is client polling at a 300 second rate.
+- id: green-button-espi
+  name: Green Button / ESPI
+  conforms: false
+  evidence: Not referenced anywhere on jemena.com.au; Green Button is not an Australian standard.
+- id: openadr
+  name: OpenADR
+  conforms: false
+  evidence: Not referenced in any public Jemena material.
+- id: ocpp-ocpi
+  name: OCPP / OCPI
+  conforms: false
+  evidence: No EV charging API is published.
+- id: iec-cim-61968-61970
+  name: IEC CIM 61968 / 61970
+  conforms: false
+  evidence: Not referenced in any public Jemena developer material.
+certifications_published:
+  found: false
+  probe_date: '2026-07-27'
+  note: >-
+    probe-security-programs.py found no trust centre and no named certification (SOC 2, ISO 27001,
+    PCI DSS, HIPAA, FedRAMP, CSA STAR). Jemena publishes ESG and sustainability reporting under
+    /about-us/news-media/, but no security compliance programme. Accordingly no `Compliance` pointer
+    is emitted for this provider.
+conformance_programme:
+  operated_by_provider: true
+  name: Jemena CSIP-AUS Approved Listing
+  url: https://www.jemena.com.au/electricity/solar-and-other-technologies/jemena-approved-list-of-inverters/
+  description: >-
+    Jemena itself runs a conformance-testing and approval programme for its clients: staging
+    connectivity, registration, discovery and functional tests must pass before a production
+    certificate is issued, and from 1 July 2025 only inverters on Jemena's Approved Listing may
+    connect and commission. Non-conforming applications are rejected.

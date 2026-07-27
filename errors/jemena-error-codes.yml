@@ -1,0 +1,101 @@
+generated: '2026-07-27'
+method: searched
+source: https://www.jemena.com.au/siteassets/asset-folder/documents/electricity/embedded-generation/jen-oem-technical-guide_handbook_v1.0.1-final.pdf
+docs_section: Section 8.7 "All about response errors" + Section 8.8
+api: jemena:jemena-csip-aus-utility-server
+format: http-status
+envelope:
+  media_type: application/sep+xml
+  note: >-
+    The JEN Utility Server does not implement RFC 9457 problem+json. Errors are signalled by the HTTP
+    status code alone; IEEE 2030.5 bodies are XML in the urn:ieee:std:2030.5:ns namespace with the
+    CSIP-AUS extension namespace https://csipaus.org/ns. There is no machine-readable error body
+    schema published by Jemena — the catalogue below is the verbatim harvest of the public handbook's
+    error FAQ, which is the whole of the documented error contract.
+errors:
+- status: null
+  title: Connection closed without response
+  symptom: The remote end closed the connection without a response error.
+  cause: The request did not include a valid PKI certificate.
+  remediation: Ensure the PKI certificate is valid and supplied in the request.
+  source: handbook 8.7.1
+- status: 400
+  title: Bad Request
+  cause: >-
+    The Utility Server enforces validation on all mandatory fields and on the specific sequence order
+    required by the XSD sequence attributes in IEEE 2030.5 and CSIP-AUS. Either a mandatory field is
+    missing, or fields are not in the expected order.
+  remediation: >-
+    Validate all request bodies against the IEEE 2030.5 and CSIP-AUS XSDs, available at
+    https://csipaus.org/ns/ and https://github.com/epri-dev/IEEE-2030.5-Client/blob/master/sep.xsd
+  source: handbook 8.7.2
+- status: 400
+  title: Missing MirrorMeterReadings under MirrorUsagePoint
+  cause: >-
+    JEN requires the client to include MirrorMeterReadings under MirrorUsagePoint on POST /sep2/mup.
+    Failure to do so results in a 400 error response. (Other DNSPs may not require this.)
+  remediation: Include MirrorMeterReadings inside the MirrorUsagePoint body.
+  operation: POST /sep2/mup
+  source: handbook Section 4 guideline 9
+- status: 403
+  title: Forbidden
+  cause: The LFDI may be mismatched.
+  remediation: >-
+    Check that the LFDI meets the Utility Server requirements for LFDI generation (handbook Section
+    9.3 LFDI Requirements).
+  source: handbook 8.7.5
+- status: 403
+  title: Invalid ConnectionPointID
+  cause: An invalid connectionPointID was supplied.
+  remediation: >-
+    Supply the 10-digit NMI the DER is connected to; it is validated against the JEN NMI database and
+    any additional digits are stripped.
+  operation: PUT /sep2/edev/{x}/cp
+  source: handbook Section 7.3
+- status: 404
+  title: Not Found (valid endpoint URL)
+  cause: >-
+    The Utility Server returns 404 for both non-existent resources and where existence confirmation is
+    withheld. An unexpected 404 on a valid URL most likely indicates a certificate issue — an invalid
+    certificate, or a certificate that is not authorised for the requested resource.
+  remediation: Review the certificate used to ensure it is valid and authorised.
+  source: handbook 8.7.3
+- status: 404
+  title: Not Found (newly created resource)
+  cause: A recently created resource may take time to become available.
+  remediation: Retry after a few seconds.
+  source: handbook 8.7.4
+- status: 415
+  title: Unsupported Media Type
+  cause: The "Content-Type" header may be missing on a PUT or POST request.
+  remediation: >-
+    Set Content-Type to "application/sep+xml" on all PUT and POST requests. The Utility Server
+    requires this header on every write.
+  source: handbook 8.7.6
+- status: 429
+  title: Too Many Requests
+  cause: The server is experiencing too many simultaneous requests.
+  remediation: >-
+    Send requests at the documented 5 minute (300s) poll and post rate, and implement exponential
+    backoff / request reduction after receiving this status.
+  source: handbook 8.7.7
+- status: 204
+  title: No Content on Registration Resource Link
+  cause: >-
+    On GET /sep2/edev/{x}/rg the Registration PIN is null, blank or empty, so it is not provided in the
+    Registration Resource Link body.
+  remediation: >-
+    Disregard the Registration Resource Link and complete in-band registration without PIN-based
+    validation; if unsupported, fall back to out-of-band registration.
+  source: handbook 8.8
+  note: Not an error per se, but the documented behaviour clients most often misread as one.
+non_error_responses:
+  note: Documented expected success codes, for contrast.
+  codes:
+  - status: 200
+    used_for: GET of any IEEE 2030.5 resource (dcap, tm, edev, mup, dderc, derc, der links)
+  - status: 204
+    used_for: PUT of DERStatus / DERCapability / DERSettings / DERAvailability and POST of MirrorMeterReading
+support:
+  contact: emergency.backstop@jemena.com.au
+  source: handbook 8.9

@@ -1,0 +1,172 @@
+generated: '2026-07-27'
+method: derived
+source: >-
+  Derived from the resource tree and data-object tables published in the JEN OEM Technical Guide
+  Handbook v1.0 (Sections 4, 6, 7, 9) — no OpenAPI exists for this provider, so the entity graph is
+  read off the documented URI hierarchy and sample payloads rather than off schema $refs.
+source_document: https://www.jemena.com.au/siteassets/asset-folder/documents/electricity/embedded-generation/jen-oem-technical-guide_handbook_v1.0.1-final.pdf
+api: jemena:jemena-csip-aus-utility-server
+base_path: /sep2
+model: IEEE 2030.5 / SEP2 resource tree as profiled by CSIP-AUS and implemented by Jemena
+entities:
+- name: DeviceCapability
+  path: /sep2/dcap
+  role: root discovery document — the entry point every client polls first
+  operations: [GET]
+- name: Time
+  path: /sep2/tm
+  role: server clock; clients must stay time-synced (all timestamps are Unix epoch seconds)
+  operations: [GET]
+- name: EndDeviceList
+  path: /sep2/edev
+  role: list of end devices visible to the presenting certificate
+  operations: [GET, POST]
+- name: EndDevice
+  path: /sep2/edev/{id}
+  identifier: LFDI
+  fields:
+  - {field: LFDI, type: String(40), format: 40 hex chars, mandatory: true, note: derived by hashing the device X.509 certificate}
+  - {field: SFDI, type: String(12), format: numeric only, mandatory: true}
+  - {field: changedTime, type: Time, format: Unix epoch seconds, mandatory: true}
+  - {field: enabled, type: Boolean, mandatory: true, note: defaults to true}
+- name: ConnectionPoint
+  path: /sep2/edev/{id}/cp
+  namespace: https://csipaus.org/ns
+  role: binds an EndDevice to the physical site
+  operations: [PUT]
+  fields:
+  - {field: ConnectionPointID, type: String(11), format: numeric, mandatory: true, note: the NMI — 10 digits plus 1 checksum, validated against the JEN NMI database; extra digits are stripped}
+- name: Registration
+  path: /sep2/edev/{id}/rg
+  role: in-band registration resource carrying the Registration PIN (aggregator model only)
+  operations: [GET]
+- name: DER
+  path: /sep2/edev/{id}/der
+  role: the DER links for an end device
+  operations: [GET]
+- name: DERStatus
+  path: /sep2/der/{id}/ders
+  role: connection status and operational mode telemetry
+  operations: [PUT]
+- name: DERCapability
+  path: /sep2/der/{id}/dercap
+  role: device ratings
+  operations: [PUT]
+- name: DERSettings
+  path: /sep2/der/{id}/derg
+  role: device settings
+  operations: [PUT]
+- name: DERAvailability
+  path: /sep2/der/{id}/dera
+  role: availability (optional in the monitoring set)
+  operations: [PUT]
+- name: FunctionSetAssignmentsList
+  path: /sep2/fsagrp/{id}/fsa
+  role: groups of devices, by topology and non-topology Groups
+  operations: [GET]
+  pagination: '?s=0&l=255'
+- name: DERProgramList
+  path: /sep2/grp/{id}/derp
+  role: DER programs assigned to a group
+  operations: [GET]
+  pagination: '?s=0&l=255'
+- name: DefaultDERControl
+  path: /sep2/derp/{id}/dderc
+  role: the fallback control applied when no active control exists
+  operations: [GET]
+- name: DERControlList
+  path: /sep2/derp/{id}/derc
+  role: scheduled and active control events (e.g. opModExpLimW site export limit)
+  operations: [GET]
+  pagination: '?s=0&l=100'
+- name: DERControlResponse
+  path: /sep2/rsps/{id}/rsp
+  role: client acknowledgement of a control event
+  operations: [POST]
+  fields:
+  - {field: status, type: enum, values: '1 Event Received, 2 Event Started, 3 Event Completed, 6 Cancelled, 7 Superseded'}
+  - {field: createdDateTime, type: Time, format: Unix epoch seconds}
+  - {field: endDeviceLFDI, type: String(40)}
+  - {field: subject, type: mRID}
+- name: MirrorUsagePointList
+  path: /sep2/mup
+  role: the Metering Mirror function set — client-posted usage points
+  operations: [GET, POST]
+  pagination: '?s=0&l=255'
+- name: MirrorUsagePoint
+  path: /sep2/mup/{id}
+  identifier: mRID (32 hex characters, client-generated)
+  operations: [GET, POST, DELETE]
+  fields:
+  - {field: mRID, type: String(32), format: hex}
+  - {field: description, type: String}
+  - {field: roleFlags, type: hex}
+  - {field: serviceCategoryKind, type: enum}
+  - {field: status, type: enum}
+  - {field: deviceLFDI, type: String(40)}
+  constraint: >-
+    MirrorMeterReadings MUST be included under MirrorUsagePoint on POST /sep2/mup or the server
+    returns 400.
+- name: MirrorMeterReading
+  parent: MirrorUsagePoint
+  role: the readings carried inside a MirrorUsagePoint post
+  fields:
+  - {field: mRID, type: String}
+  - {field: description, type: String}
+  - {field: Reading, type: object}
+  - {field: ReadingType, type: object, subfields: 'accumulationBehaviour, commodity, dataQualifier, flowDirection, kind, phase, powerOfTenMultiplier, uom'}
+- name: UsagePoint / MeterReading
+  path: /sep2/upt/{id}/mr/{id}
+  role: server-side read-back of a posted reading
+  operations: [GET]
+- name: MeterReading
+  path: /sep2/mr/{id}
+  operations: [GET]
+relationships:
+- {from: DeviceCapability, to: EndDeviceList, kind: has_many, via: link}
+- {from: DeviceCapability, to: Time, kind: has_one, via: link}
+- {from: DeviceCapability, to: MirrorUsagePointList, kind: has_many, via: link}
+- {from: EndDeviceList, to: EndDevice, kind: has_many, via: list}
+- {from: EndDevice, to: ConnectionPoint, kind: has_one, via: /cp}
+- {from: EndDevice, to: Registration, kind: has_one, via: /rg}
+- {from: EndDevice, to: DER, kind: has_many, via: /der}
+- {from: DER, to: DERStatus, kind: has_one, via: /ders}
+- {from: DER, to: DERCapability, kind: has_one, via: /dercap}
+- {from: DER, to: DERSettings, kind: has_one, via: /derg}
+- {from: DER, to: DERAvailability, kind: has_one, via: /dera}
+- from: EndDevice
+  to: FunctionSetAssignmentsList
+  kind: has_many
+  via: '/edev/{x}/fsa'
+  cardinality: many-to-many
+  note: >-
+    Devices map to FSAs in a many-to-many relationship; clients must support multiple DER FSA lists
+    and the relevant primacy.
+- from: FunctionSetAssignments
+  to: DERProgramList
+  kind: has_many
+  via: '/fsa/{x}/derp'
+- {from: DERProgram, to: DefaultDERControl, kind: has_one, via: /dderc}
+- {from: DERProgram, to: DERControlList, kind: has_many, via: /derc}
+- {from: DERControl, to: DERControlResponse, kind: has_many, via: 'POST /rsps/{id}/rsp, subject = control mRID'}
+- {from: MirrorUsagePoint, to: MirrorMeterReading, kind: has_many, via: embedded element}
+- {from: MirrorUsagePoint, to: EndDevice, kind: belongs_to, via: deviceLFDI}
+- from: MirrorUsagePoint
+  to: MeterReading
+  kind: has_many
+  via: '/upt/{id}/mr/{id}'
+- {from: ConnectionPoint, to: NMI, kind: belongs_to, via: ConnectionPointID}
+identifiers:
+- {name: LFDI, scope: device/site, format: 40 hex characters, derived_from: X.509 client certificate hash}
+- {name: SFDI, scope: device, format: numeric String(12)}
+- {name: mRID, scope: resource, format: 32 hex characters, note: client-generated master resource identifier; re-usable after DELETE}
+- {name: ConnectionPointID, scope: site, format: 10-digit NMI plus checksum}
+- {name: PEN, scope: aggregator, format: IANA Private Enterprise Number, note: last 8 hex digits of every virtual LFDI an aggregator mints}
+grouping_note: >-
+  Jemena's FSA structure diagram shows each EndDevice mapped to multiple FSAs, each FSA to a DERProgram,
+  and DERPrograms nested in a primacy hierarchy (e.g. DERP A1 -> DERP A1-B1 -> DERP A1-B1-C1) shared
+  across devices and, in the diagram, across other DNSPs.
+caveat: >-
+  This is a derived reading of a prose contract, not a harvested schema. The authoritative machine
+  definitions are the third-party IEEE 2030.5 and CSIP-AUS XSDs at https://csipaus.org/ns/ and
+  https://github.com/epri-dev/IEEE-2030.5-Client/blob/master/sep.xsd — Jemena publishes neither.

@@ -1,0 +1,53 @@
+generated: '2026-07-27'
+method: searched
+source: live anonymous probes, 2026-07-27
+result: none-found
+note: >-
+  Every /.well-known/ discovery path was probed across all four Jemena hosts and the API host. Nothing
+  is served. Recorded as evidence of absence — no WellKnown, APICatalog or SecurityTxt pointer is
+  claimed in apis.yml, because none of these documents exists.
+hosts:
+- host: https://www.jemena.com.au
+  documents:
+  - {path: /.well-known/security.txt, status: 404}
+  - {path: /.well-known/openid-configuration, status: 404}
+  - {path: /.well-known/oauth-authorization-server, status: 404}
+  - {path: /.well-known/api-catalog, status: 404}
+  - {path: /.well-known/ai-plugin.json, status: 404}
+  - {path: /security.txt, status: 404}
+  - {path: /llms.txt, status: 404}
+  - {path: /openapi.json, status: 404}
+  - {path: /swagger.json, status: 404}
+  - {path: /api-docs, status: 404}
+  - {path: /robots.txt, status: 200, note: 'disallows only /episerver/ and /utils/; references no API paths'}
+  - {path: /sitemap.xml, status: 200, note: '436 URLs, zero developer/API/open-data/specification pages'}
+- host: https://myportal.jemena.com.au
+  documents:
+  - {path: /.well-known/security.txt, status: 403}
+  - {path: /.well-known/openid-configuration, status: 403}
+  - {path: /api, status: 403}
+- host: https://myservices.jemena.com.au
+  documents:
+  - {path: /.well-known/security.txt, status: 302, note: redirects to the Spring Security login form}
+  - {path: /.well-known/openid-configuration, status: 302, note: redirects to the login form — not an OIDC discovery document}
+  - {path: /.well-known/oauth-authorization-server, status: 302, note: redirects to the login form}
+- host: 'https://sep2.aws.jemena.com.au:8443'
+  note: >-
+    Mutually-authenticated TLS. Every anonymous path returns HTTP 500 from nginx because no client
+    certificate is presented — including paths that do not exist — so no discovery information can be
+    read anonymously from this host.
+  documents:
+  - {path: /.well-known/security.txt, status: 500}
+  - {path: /openapi.json, status: 500}
+  - {path: /swagger.json, status: 500}
+  - {path: /sep2/openapi.json, status: 500}
+  - {path: /api-docs, status: 500}
+  - {path: /docs, status: 500}
+  - {path: /sep2/dcap, status: 500, note: 'the real API root; TLS handshake succeeds against a private-PKI chain (ssl_verify_result=19)'}
+- host: https://api.jemena.com.au
+  note: Resolves via Akamai (api.jemena.com.au.edgekey.net) but serves nothing publicly.
+  documents:
+  - {path: /, status: 503}
+  - {path: /openapi.json, status: 503}
+  - {path: /swagger.json, status: 503}
+  - {path: /health, status: 503}

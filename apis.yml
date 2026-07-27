@@ -37,6 +37,18 @@ tags:
 - IEEE 2030.5
 created: '2026-07-27'
 modified: '2026-07-27'
+enrichment:
+  date: '2026-07-27'
+  note: >-
+    Round 2 enrichment. Contract discovery was re-run against every host — www.jemena.com.au,
+    api.jemena.com.au, myportal, myservices and the Utility Server itself on port 8443 — for
+    /openapi.json, /swagger.json, /api-docs, /docs, GraphQL and MCP. All negative; the mTLS gate
+    returns HTTP 500 for every anonymous path. Jemena genuinely publishes no machine-readable API
+    description, so nothing was fabricated into openapi/. The artifacts in this repo are instead a
+    faithful harvest of the prose contract in Jemena's own public JEN OEM Technical Guide Handbook
+    v1.0 (authentication, conventions, errors, sandbox, conformance, lifecycle) plus a derived entity
+    graph. No WellKnown, Webhooks, AsyncAPI, SDKs, MCPServer, AgentSkill, Idempotency, Compliance,
+    Deprecation, Roadmap or Postman pointer is claimed, because none of those things exists here.
 specificationVersion: '0.19'
 apis:
 - aid: jemena:jemena-csip-aus-utility-server
@@ -80,7 +92,27 @@ apis:
     url: https://www.jemena.com.au/electricity/solar-and-other-technologies/jemena-approved-list-of-inverters/
   - type: Specification
     url: https://www.csipaus.org/about
+  - type: APIReference
+    name: JEN OEM Technical Guide Handbook v1.0 — the resource tree, documented operation by operation
+    url: https://www.jemena.com.au/siteassets/asset-folder/documents/electricity/embedded-generation/jen-oem-technical-guide_handbook_v1.0.1-final.pdf
+  - type: Authentication
+    url: authentication/jemena-authentication.yml
+  - type: Conventions
+    url: conventions/jemena-conventions.yml
+  - type: ErrorCatalog
+    url: errors/jemena-error-codes.yml
+  - type: Sandbox
+    name: JEN Staging Utility Server + conformance test sequence
+    url: sandbox/jemena-sandbox.yml
+  - type: DataModel
+    url: data-model/jemena-data-model.yml
+  - type: Conformance
+    url: conformance/jemena-conformance.yml
+  - type: Lifecycle
+    url: lifecycle/jemena-lifecycle.yml
 common:
+- type: DomainSecurity
+  url: security/jemena-domain-security.yml
 - type: Website
   url: https://www.jemena.com.au/
 - type: Documentation
@@ -89,7 +121,8 @@ common:
   url: https://www.linkedin.com/company/jemena
 - type: SignUp
   url: https://myportal.jemena.com.au/
-- type: Portal
+- type: CustomerPortal
+  name: My Services — connection applications for customers and trades (NOT a developer portal)
   url: https://myservices.jemena.com.au/edp/login/auth
 - type: StatusPage
   url: https://poweroutages.jemena.com.au/
@@ -97,6 +130,27 @@ common:
   url: https://www.jemena.com.au/help-support/
 - type: PrivacyPolicy
   url: https://www.jemena.com.au/about-us/privacy-policy/
+- type: TermsOfService
+  url: https://www.jemena.com.au/about-us/terms-of-use/
+- type: Blog
+  name: Jemena news and media
+  url: https://www.jemena.com.au/about-us/news-media/
+- type: Authentication
+  url: authentication/jemena-authentication.yml
+- type: Conventions
+  url: conventions/jemena-conventions.yml
+- type: ErrorCatalog
+  url: errors/jemena-error-codes.yml
+- type: Sandbox
+  url: sandbox/jemena-sandbox.yml
+- type: DataModel
+  url: data-model/jemena-data-model.yml
+- type: Conformance
+  url: conformance/jemena-conformance.yml
+- type: Lifecycle
+  url: lifecycle/jemena-lifecycle.yml
+- type: LLMsTxt
+  url: llms/jemena-llms.txt
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com

@@ -1,0 +1,163 @@
+generated: '2026-07-27'
+method: searched
+source: https://www.jemena.com.au/siteassets/asset-folder/documents/electricity/embedded-generation/jen-oem-technical-guide_handbook_v1.0.1-final.pdf
+api: jemena:jemena-csip-aus-utility-server
+note: >-
+  Cross-cutting request/response semantics for the JEN CSIP-AUS Utility Server, harvested from the
+  public JEN OEM Technical Guide Handbook v1.0 (12 June 2025). This is an IEEE 2030.5 / SEP2 server,
+  not a JSON REST API, so several of the usual web-API conventions (JSON envelopes, bearer tokens,
+  cursor pagination, idempotency keys, webhooks) genuinely do not exist here; each is recorded as
+  absent rather than invented.
+protocol:
+  style: IEEE 2030.5 (Smart Energy Profile 2.0) RESTful XML over mutually-authenticated TLS
+  profile: CSIP-AUS (Common Smart Inverter Profile Australia), SA TS 5573
+  base_uris:
+    production: https://sep2.aws.jemena.com.au:8443
+    staging: https://sep2-e2e.aws.jemena.com.au:8444
+  path_prefix: /sep2
+authentication:
+  style: mutual TLS with a Jemena-signed IEEE 2030.5 X.509 client certificate, plus source-IP allow-listing
+  see: authentication/jemena-authentication.yml
+content_negotiation:
+  request_content_type: application/sep+xml
+  request_content_type_required_on: [PUT, POST]
+  accept_header: application/xml
+  accept_note: >-
+    Handbook FAQ 8.5 — if the Accept header is missing or wrong, the server returns JSON instead of
+    the expected IEEE 2030.5 XML. Clients must send Accept: application/xml.
+  namespaces:
+  - urn:ieee:std:2030.5:ns
+  - https://csipaus.org/ns
+  schema_validation:
+    enforced: true
+    note: >-
+      The server validates mandatory fields AND element sequence order per the XSD sequence attributes
+      in IEEE 2030.5 and CSIP-AUS; violations return 400.
+    xsd_sources:
+    - https://csipaus.org/ns/
+    - https://github.com/epri-dev/IEEE-2030.5-Client/blob/master/sep.xsd
+timestamps:
+  format: Unix epoch seconds
+  note: >-
+    "All timestamps should be in Unix epoch seconds." Example given in the handbook data-object table:
+    1747889552 = Thursday, 22 May 2025 2:52:32 PM GMT+10:00. Clients must be time-synced with the
+    Utility Server; loss of time sync is an explicit failure criterion in the connectivity test.
+  time_resource: GET /sep2/tm
+pagination:
+  style: offset-and-limit query parameters (IEEE 2030.5 List resources)
+  params:
+    start: s
+    limit: l
+  examples:
+  - GET /sep2/fsagrp/134/fsa?s=0&l=255
+  - GET /sep2/grp/28524/derp?s=0&l=255
+  - GET /sep2/derp/28523/derc?s=0&l=100
+  - GET /sep2/mup?s=0&l=255
+  - GET /sep2/mup?l=255
+  response_fields: IEEE 2030.5 List resources carry all/results/@href attributes; no cursor or link-header pagination.
+polling_and_push:
+  model: client-polled — the server does not push
+  subscription_notification:
+    supported: false
+    note: >-
+      Jemena's Utility Server does not support POST /ntfy (the IEEE 2030.5 subscription/notification
+      function set), so clients poll. This is why there is no AsyncAPI, no webhook catalogue and no
+      event surface for this provider.
+  rates_normal_operation:
+  - {resource: DeviceCapability, type: poll, seconds: 300}
+  - {resource: EndDeviceList, type: poll, seconds: 300}
+  - {resource: FunctionSetAssignmentsList, type: poll, seconds: 300}
+  - {resource: DERProgramList, type: poll, seconds: 300}
+  - {resource: MirrorUsagePoint, type: post, seconds: 300}
+  - {resource: DERList (DERStatus, DERSettings, DERCapability), type: post, seconds: 300}
+  rates_capability_test:
+  - {resource: DeviceCapability, type: poll, seconds: 300}
+  - {resource: EndDeviceList, type: poll, seconds: 300}
+  - {resource: FunctionSetAssignmentsList, type: poll, seconds: 300}
+  - {resource: DERProgramList, type: poll, seconds: 60}
+  - {resource: MirrorUsagePoint, type: post, seconds: 60}
+  - {resource: DERList (DERStatus, DERSettings, DERCapability), type: post, seconds: 60}
+  warning: >-
+    "Any more frequent post and poll rate than this will cause performance issues to Utility Server.
+    It adds significant, excess traffic to the server which leads to increased errors, longer response
+    time and delays in processing the required resources."
+  client_requirement: >-
+    Clients must support a 1 minute rate so the capability test can run quickly; arbitrary monitoring
+    PostRates shall be supported to a minimum interval of 60s in alignment with CSIP-AUS.
+rate_limiting:
+  signalled_by: HTTP 429 Too Many Requests
+  headers_published: false
+  client_obligation: >-
+    Send at the documented 5-minute poll and post rate and be capable of exponentially reducing
+    requests / retrying after receiving 429.
+  see: errors/jemena-error-codes.yml
+idempotency:
+  idempotency_key_header: null
+  supported: false
+  note: >-
+    Jemena documents no idempotency key, no request-id header and no replay-safe write contract.
+    Telemetry and status writes use PUT against a fixed resource path (PUT /sep2/der/{x}/ders,
+    /dercap, /derg, /dera), which is idempotent by HTTP method, but POST /sep2/mup is explicitly NOT
+    replay-safe: handbook FAQ 8.6 warns "Do not post a new one this create duplicate record without
+    deleting one first" and prescribes DELETE /sep2/mup/{id} then re-POST with the same mRID to
+    correct a MirrorUsagePoint. Recorded as unsupported so no Idempotency pointer is claimed.
+  duplicate_avoidance: >-
+    Resource identity is the client-generated mRID (a 32-hex-character master resource identifier);
+    re-using the same mRID after DELETE is the documented correction path.
+tracing:
+  request_id_header: null
+  note: No correlation/request-id header is documented.
+versioning:
+  scheme: none — no version in the URI, no version header
+  version_tag:
+    present: false
+    note: >-
+      Handbook Section 4 guideline 4 — "JEN Utility Server does not currently include the version tag
+      to any of the responses." Clients are advised NOT to check the <version> field and instead to
+      poll and diff each field. Named impacted endpoints: GET FunctionSetAssignmentsList, POST
+      MirrorMeterReading, GET MeterReading, GET DERProgramList, GET DefaultDERControl,
+      GET DERControlList.
+  document_version: JEN OEM Technical Guide Handbook v1.0 / file v1.0.1-final, 12 June 2025
+  see: lifecycle/jemena-lifecycle.yml
+control_acknowledgement:
+  requirement: >-
+    When the Utility Server sends a control event, each related device must send a DERControlResponse
+    acknowledging receipt, start or completion.
+  status_enumeration:
+  - {value: 1, meaning: Event Received}
+  - {value: 2, meaning: Event Started}
+  - {value: 3, meaning: Event Completed}
+  - {value: 6, meaning: The event has been cancelled}
+  - {value: 7, meaning: The event has been superseded}
+  posted_to: POST /sep2/rsps/{id}/rsp
+  successive_events: >-
+    Jemena schedules operational controls as a series of seven successive one-day controls using
+    randomizeDuration and randomizeStart. Clients must use the effective end time of the earlier event
+    as the effective start time of the next, and must NOT report these as superseded.
+  bau_control: >-
+    Jemena sends daily controls to all commissioned inverters — site export limit (opModExpLimW) equal
+    to the inverter's approved capacity, starting 6 PM with a 24 hour duration.
+grouping:
+  function_set_assignments: >-
+    The Utility Server manages groups of devices using topology and non-topology Groups. EndDevices map
+    to FunctionSetAssignments in a many-to-many relationship, and clients are expected to support
+    multiple DER FSA lists and the relevant primacy.
+efficiency_guidance:
+  batch_meter_readings: >-
+    Jemena recommends POSTing MirrorMeterReadingList to send multiple MirrorMeterReadings rather than
+    one POST per reading — e.g. 2 POST calls for 6+ readings.
+  aggregation: >-
+    Where a client manages multiple DER under a single device: Meter Mirror values shall be an
+    aggregation of the DER under the device; DERCapability and DERSettings values shall be a summation
+    of the total controllable capacities.
+failsafe:
+  requirement: >-
+    Aggregator-model clients must implement fail-safe operating modes at each site so that fail-safe
+    export limits operate if the aggregator or gateway platform fails.
+cross_links:
+  errors: errors/jemena-error-codes.yml
+  authentication: authentication/jemena-authentication.yml
+  lifecycle: lifecycle/jemena-lifecycle.yml
+  sandbox: sandbox/jemena-sandbox.yml
+  data_model: data-model/jemena-data-model.yml
+  conformance: conformance/jemena-conformance.yml

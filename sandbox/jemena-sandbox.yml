@@ -1,0 +1,102 @@
+generated: '2026-07-27'
+method: searched
+source: https://www.jemena.com.au/siteassets/asset-folder/documents/electricity/embedded-generation/jen-oem-technical-guide_handbook_v1.0.1-final.pdf
+api: jemena:jemena-csip-aus-utility-server
+note: >-
+  Jemena runs a genuine, separately addressed staging environment for the JEN CSIP-AUS Utility Server,
+  and the entire onboarding path runs through it before any production certificate is issued. Every
+  value below is published verbatim in the public OEM handbook; nothing is invented.
+environments:
+- name: JEN Staging
+  role: sandbox
+  base_uri: https://sep2-e2e.aws.jemena.com.au:8444
+  dns: gsmd-int-nonprod-01-nlb-c1e23f301554325d.elb.ap-southeast-2.amazonaws.com
+  probe:
+    date: '2026-07-27'
+    status: '000'
+    note: >-
+      Connection timed out from outside Australia, consistent with the documented client-IP
+      allow-listing on the non-production environment.
+- name: JEN Production
+  role: production
+  base_uri: https://sep2.aws.jemena.com.au:8443
+  dns: gsmd-int-prod-01-nlb-680afe73530cbb36.elb.ap-southeast-2.amazonaws.com
+  probe:
+    date: '2026-07-27'
+    status: 500
+    note: nginx 500 on GET /sep2/dcap because no mTLS client certificate was presented.
+separation:
+  model: separate hosts and separate certificates
+  note: >-
+    "Certificate is unique to a client and respective Jemena Utility Server environment; staging and
+    production." A staging certificate cannot be used against production; a second certificate
+    issuance and a second test cycle are required to go live.
+test_credentials:
+  certificate:
+    self_serve: false
+    how: >-
+      Email a Certificate Signing Request plus the IP addresses to allow-list to
+      emergency.backstop@jemena.com.au (aggregator model), or an MCA intermediate-CA CSR plus a CA
+      Naming Form (direct-connected device model). Jemena returns the signed certificate, the
+      aggregator LFDI and the registration PIN.
+  registration_pin:
+    staging: '111115'
+    production: published in handbook Section 7.1.1 / FAQ 8.4 — not mirrored here
+    optional: true
+  ip_allow_listing:
+    required: true
+    change_notice: 7 business days advance notice to emergency.backstop@jemena.com.au
+test_suite:
+  note: >-
+    The staging environment is not a free-form playground — it is a graded conformance test sequence.
+    Handbook Section 7 and Appendices A1/B1 define the tests and their pass/fail criteria.
+  stages:
+  - id: connectivity-test
+    section: '7.2 / A1.1'
+    description: Client communications with the Utility Server are initialised; the Utility Server captures EndDevice information.
+    fail_criteria:
+    - Client does not perform discovery against the Utility Server.
+    - Client does not access the necessary function set or device capability.
+    - Client becomes unsynchronised with the Utility Server.
+  - id: device-registration
+    section: '7.3'
+    description: >-
+      Register a test device — POST /sep2/edev with the device LFDI, then PUT /sep2/edev/{x}/cp with
+      the csipaus:ConnectionPoint carrying the ConnectionPointID (NMI). An invalid ConnectionPointID
+      returns 403.
+  - id: discovery-test
+    section: '7.4 / A1.2'
+    description: >-
+      Confirm each endpoint responds as specified — GET /sep2/tm (200), GET /sep2/mup?s=0&l=255 (200),
+      GET /sep2/edev (200), GET /sep2/derp/{x}/dderc (200), GET /sep2/derp/{x}/derc (200),
+      GET /sep2/edev/{x}/der (200) — then PUT DERStatus (/ders), DERCapability (/dercap),
+      DERSettings (/derg) and DERAvailability (/dera), each expecting 204.
+  - id: functional-test
+    section: '7.5 / B1'
+    description: Out-of-band functional testing against the staging Utility Server, with documented pass/fail criteria.
+  - id: production-onboarding
+    section: '7.6'
+    description: Certificate issuance and testing repeated in the production environment.
+  - id: onboard-complete
+    section: '7.7'
+    description: >-
+      On success Jemena adds the client to the public approved OEM list and to Jemena's CSIP-AUS
+      Approved Listing. From 1 July 2025 inverters not on that listing cannot connect or commission.
+capability_test_rates:
+  note: >-
+    Jemena tightens the poll/post rates during the capability test so it completes faster; clients
+    must support a 60 second rate.
+  DERProgramList_poll_seconds: 60
+  MirrorUsagePoint_post_seconds: 60
+  DERList_post_seconds: 60
+sample_payloads_published:
+  note: >-
+    Handbook Section 6 publishes worked request/response samples for four flows. These are the closest
+    thing Jemena ships to fixtures.
+  flows:
+  - 6.1 Initial Device Connectivity / Discovery
+  - 6.2 Send DER Connection Status, Operational Mode & Capabilities and Settings
+  - 6.3 Send DER Telemetry
+  - 6.4 Receiving and responding to DERControls
+troubleshooting: handbook Section 8 Troubleshooting and FAQs — see errors/jemena-error-codes.yml
+support_contact: emergency.backstop@jemena.com.au

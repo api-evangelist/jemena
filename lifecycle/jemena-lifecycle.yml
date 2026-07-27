@@ -1,0 +1,97 @@
+generated: '2026-07-27'
+method: searched
+source: https://www.jemena.com.au/siteassets/asset-folder/documents/electricity/embedded-generation/jen-oem-technical-guide_handbook_v1.0.1-final.pdf
+api: jemena:jemena-csip-aus-utility-server
+versioning:
+  scheme: none-in-api
+  note: >-
+    There is no version segment in the URI, no version header and no version negotiation. Handbook
+    Section 4 guideline 4 states the Utility Server "does not currently include the version tag to any
+    of the responses" and advises clients not to check the <version> field but to poll and diff each
+    field instead. The versioned artefact is the documentation, not the interface.
+  document_versions:
+  - document: JEN OEM Technical Guide Handbook
+    version: '1.0'
+    file_version: v1.0.1-final
+    date: '2025-06-12'
+    revision_history:
+    - {rev: '1.0', date: '2025-06-12', change: Final version, author: Jemena}
+    review_period: 12/06/2025 + 1 year
+    next_review_due: '2026-06-01'
+    owner: Digital – Electricity Solutions
+    url: https://www.jemena.com.au/siteassets/asset-folder/documents/electricity/embedded-generation/jen-oem-technical-guide_handbook_v1.0.1-final.pdf
+  - document: Embedded Generation Emergency Backstop Requirements (public)
+    date: '2025-12-01'
+    url: https://www.jemena.com.au/siteassets/asset-folder/documents/electricity/embedded-generation/embedded-generation-emergency-backstop-requirements_public_01-12-2025.pdf
+  - document: Installer CSIP-AUS Commissioning Test Procedure (public)
+    date: '2024-05-22'
+    url: https://www.jemena.com.au/siteassets/asset-folder/documents/electricity/embedded-generation/installer-csip-aus-commissioning-test-procedure_public_22052024.pdf
+  - document: JEN Embedded Networks Emergency Backstop Scenarios
+    url: https://www.jemena.com.au/contentassets/8a62a168071f46b2ab5c542ed621c530/jen-embedded-networks-emergency-backstop-scenarios.pdf
+  - document: Embedded Generation Emergency Backstop Guideline above 30kVA (DOE over SCADA and generator monitoring meter methods, JEN-ELE-999-GL-EL-007)
+    url: https://www.jemena.com.au/siteassets/asset-folder/documents/electricity/embedded-generation/emebdded-generation-emergency-backstop-guideline-above-30kva---doe-over-scada-and-gemerator-monitoring-meter-methods-jen-ele-999-gl-el-007.pdf
+  standard_versions:
+    profile: CSIP-AUS (SA TS 5573)
+    base: IEEE 2030.5 / SEP2
+    inverter_standard: AS/NZS 4777.2:2020
+environments:
+- {name: JEN Staging, base_uri: 'https://sep2-e2e.aws.jemena.com.au:8444', role: onboarding-and-conformance-testing}
+- {name: JEN Production, base_uri: 'https://sep2.aws.jemena.com.au:8443', role: live}
+deprecation:
+  policy_url: null
+  policy_published: false
+  sunset_header: false
+  deprecation_header: false
+  note: >-
+    Jemena publishes no API deprecation policy, no Sunset/Deprecation header support (RFC 8594) and no
+    breaking-change notice period. The nearest analogues are regulatory and connection-policy events,
+    recorded below, not API lifecycle guarantees. No `Deprecation` pointer is claimed.
+  related_events:
+  - date: '2025-07-01'
+    kind: connection-policy
+    description: >-
+      From 1 July 2025 only inverters on Jemena's CSIP-AUS Approved Listing may connect and commission;
+      non-conforming applications are rejected.
+    url: https://www.jemena.com.au/electricity/solar-and-other-technologies/jemena-approved-list-of-inverters/
+  - date: '2025-10-09'
+    kind: regulatory
+    description: >-
+      Victoria Government Gazette GG2025S553 Order in Council made, revoking the earlier GG2024S031 and
+      GG2024S336 Orders that had established the emergency backstop obligation.
+  - kind: decommissioned-service
+    description: >-
+      electricityoutlook.jemena.com.au — the former customer smart-meter portal — returns NXDOMAIN from
+      a public resolver as of 2026-07-27 despite still being widely linked and indexed. Retired without
+      a published deprecation notice; third-party clients built against it (e.g. community
+      Home Assistant integrations) are dead.
+    status: removed
+roadmap:
+  published: false
+  signalled_items:
+  - >-
+    In-band registration: "Jemena is in progress of testing this feature and will engage with OEMs on
+    the rollout plan." Additional onboarding tests will be required before production use.
+  - >-
+    Periodic controls: "In the future, JEN Utility Server intend to send periodic controls similar to
+    other DNSPs."
+  note: These are forward statements inside the handbook, not a published roadmap page; no Roadmap pointer is claimed.
+sla:
+  url: null
+  uptime_target: null
+  note: No SLA or uptime commitment is published for the Utility Server.
+status_page:
+  url: https://poweroutages.jemena.com.au/
+  covers: electricity network outages, not API availability
+  note: >-
+    Geo-restricted — returns HTTP 403 from CloudFront ("configured to block access from your country")
+    outside Australia. There is no API status page for the CSIP-AUS Utility Server.
+changelog:
+  url: null
+  note: >-
+    No dated API changelog is published. The only change record is the revision-history table inside
+    each PDF (currently a single row: rev 1.0, 12/06/2025, "Final version"). Too thin to warrant a
+    separate changelog/ artifact.
+deprecated_operations: []
+support:
+  contact: emergency.backstop@jemena.com.au
+  general: https://www.jemena.com.au/help-support/
