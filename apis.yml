@@ -21,6 +21,17 @@ description: >-
   emergency backstop mandate for remotely curtailable rooftop solar. It is fully documented in public PDF
   handbooks, has published staging and production base URIs, and is gated behind Jemena-issued mTLS PKI
   certificates, IP whitelisting and an OEM conformance-testing programme.
+deliveryModel:
+  model: saas
+  open_source: false
+  commercial: true
+  callable_host: false
+  label: Hosted service · you call their endpoint
+  confidence: medium
+  source:
+  - pricing
+  generated: '2026-08-28'
+  method: derived
 image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/jemena.png
 tags:
 - Energy
