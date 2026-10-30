@@ -1,4 +1,4 @@
-# Jemena (jemena)
+# Jemena
 
 <!-- API-EVANGELIST-PROVENANCE:BEGIN -->
 > ### About this repository
@@ -64,69 +64,91 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-Jemena is an Australian energy infrastructure owner-operator, headquartered in Melbourne and owned by SGSP (Australia) Assets — 60% State Grid Corporation of China, 40% Singapore Power. It sits on the poles-and-pipes side of the value chain, not the retail side: it runs the Jemena Electricity Network distributing power to north and north-west Melbourne, the Jemena Gas Network distributing gas across New South Wales, the Eastern, Queensland and Northern Gas Pipelines, the Colongra storage facility, and holds 50% of ActewAGL's ACT distribution networks. Its API posture is the inverse of what the Australian Consumer Data Right story would predict. Jemena is NOT a designated CDR energy data holder — the CDR energy designation covers retailers as primary data holders and AEMO as secondary data holder, and the live CDR Register energy brand list contains 84 brands, all of them retailers and none of them a distribution network. There is consequently no Jemena consumer usage or billing API, and the Electricity Outlook customer smart-meter portal no longer resolves in DNS. Jemena also publishes no open market or network data API; its outage map is CloudFront geo-restricted and its Daily Gas Data product is a paid annual email subscription. What Jemena does run is a real, live, standards-conformant machine-to-machine API for grid control: the JEN CSIP-AUS Utility Server, an IEEE 2030.5 / SEP2 implementation of the CSIP-AUS (SA TS 5573) profile, stood up to satisfy the Victorian Government's emergency backstop mandate for remotely curtailable rooftop solar.
+Jemena is an Australian energy infrastructure owner-operator, headquartered in Melbourne and owned by SGSP (Australia) Assets — 60% State Grid Corporation of China, 40% Singapore Power. It sits on the poles-and-pipes side of the value chain, not the retail side: it runs the Jemena Electricity Network distributing power to north and north-west Melbourne, the Jemena Gas Network distributing gas across New South Wales, the Eastern, Queensland and Northern Gas Pipelines, the Colongra storage facility, and holds 50% of ActewAGL's ACT distribution networks. Its API posture is the inverse of what the Australian Consumer Data Right story would predict. Jemena is NOT a designated CDR energy data holder — the CDR energy designation covers retailers as primary data holders and AEMO as secondary data holder, and the live CDR Register energy brand list contains 84 brands, all of them retailers and none of them a distribution network. There is consequently no Jemena consumer usage or billing API, and the Electricity Outlook customer smart-meter portal no longer resolves in DNS. Jemena also publishes no open market or network data API; its outage map is CloudFront geo-restricted and its Daily Gas Data product is a paid annual email subscription. What Jemena does run is a real, live, standards-conformant machine-to-machine API for grid control: the JEN CSIP-AUS Utility Server, an IEEE 2030.5 / SEP2 implementation of the CSIP-AUS (SA TS 5573) profile, stood up to satisfy the Victorian Government's emergency backstop mandate for remotely curtailable rooftop solar. It is fully documented in public PDF handbooks, has published staging and production base URIs, and is gated behind Jemena-issued mTLS PKI certificates, IP whitelisting and an OEM conformance-testing programme.
 
-**APIs.json:** [https://raw.githubusercontent.com/api-evangelist/jemena/refs/heads/main/apis.yml](https://raw.githubusercontent.com/api-evangelist/jemena/refs/heads/main/apis.yml)
+**Areas:** Energy · Australia · Utilities · Electricity · Gas · Grid · Network Distributor · DER · Solar · Smart Metering · Demand Response · IEEE 2030.5
 
-## Tags
+## Jemena on APIs.io
 
-- Energy
-- Australia
-- Utilities
-- Electricity
-- Gas
-- Grid
-- Network Distributor
-- DER
-- Solar
-- Smart Metering
-- Demand Response
-- IEEE 2030.5
+Everything profiled for Jemena is published on APIs.io rather than in this repository. Start at the provider page — **[apis.io/providers/jemena/](https://apis.io/providers/jemena/)** — or go straight to one of the APIs or properties below.
 
-## Timestamps
+### APIs (1)
 
-- **Created:** 2026-07-27
-- **Modified:** 2026-07-27
+- [Jemena CSIP-AUS Utility Server (IEEE 2030.5)](https://apis.io/apis/jemena/jemena-csip-aus-utility-server/) — Jemena Electricity Networks' CSIP-AUS compliant control server — an IEEE 2030.5 (Smart Energy Profile 2.0) implementation of the Common Smart Inverter…
 
-## APIs
+### Published properties
 
-### Jemena CSIP-AUS Utility Server (IEEE 2030.5)
+Each property below is a page on APIs.io carrying the machine-readable artifact and what it says.
 
-Jemena Electricity Networks' CSIP-AUS compliant control server — an IEEE 2030.5 (Smart Energy Profile 2.0) implementation of the Common Smart Inverter Profile Australia (SA TS 5573) — used to discover, monitor and remotely curtail small and medium embedded generation (rooftop solar, batteries, VPP fleets) on the Jemena Victorian distribution network under the Victorian Government's emergency backstop mandate. Access is not self-serve: an OEM or aggregator must submit a Certificate Signing Request and IP addresses to whitelist, receive a Jemena-signed IEEE 2030.5 PKI client certificate, pass connectivity, discovery and functional tests in staging, then be onboarded to production and added to Jemena's CSIP-AUS Approved Listing.
+#### Security (2)
 
-- **Human URL:** [https://www.jemena.com.au/electricity/solar-connections/victoria-emergency-backstop-mechanism/emergency-backstop-mechanism-documents/](https://www.jemena.com.au/electricity/solar-connections/victoria-emergency-backstop-mechanism/emergency-backstop-mechanism-documents/)
-- **Base URL:** `https://sep2.aws.jemena.com.au:8443/sep2`
+Authentication, trust centre, and vulnerability disclosure.
 
-#### Tags
+- [Jemena Authentication](https://apis.io/security/jemena/jemena-authentication/)
+- [Jemena Domain Security](https://apis.io/security/jemena/jemena-domain-security/)
 
-- DER
-- Solar
-- Grid
-- IEEE 2030.5
-- CSIP-AUS
-- Demand Response
-- Smart Inverters
+## Where to find this API
 
-#### Properties
-
-- [Documentation](https://www.jemena.com.au/siteassets/asset-folder/documents/electricity/embedded-generation/jen-oem-technical-guide_handbook_v1.0.1-final.pdf) — JEN OEM technical guide handbook v1.0 (12 June 2025)
-- [Documentation](https://www.jemena.com.au/siteassets/asset-folder/documents/electricity/embedded-generation/embedded-generation-emergency-backstop-requirements_public_01-12-2025.pdf) — Embedded Generation Emergency Backstop Requirements (1 December 2025)
-- [Documentation](https://www.jemena.com.au/siteassets/asset-folder/documents/electricity/embedded-generation/installer-csip-aus-commissioning-test-procedure_public_22052024.pdf) — Installer CSIP-AUS Commissioning Test Procedure (22 May 2024)
-- [Documentation](https://www.jemena.com.au/electricity/solar-connections/victoria-emergency-backstop-mechanism/) — Victoria emergency backstop mechanism
-- [Documentation](https://www.jemena.com.au/electricity/solar-and-other-technologies/jemena-approved-list-of-inverters/) — Jemena CSIP-AUS Approved Listing
-- [Specification](https://www.csipaus.org/about) — CSIP-AUS (SA TS 5573), the Australian IEEE 2030.5 profile
-
-## Common Properties
+Links to the company's own pages. This repository publishes no copy of their specifications — the canonical document is theirs and lives at the URLs below.
 
 - [Website](https://www.jemena.com.au/)
 - [Documentation](https://www.jemena.com.au/electricity/solar-connections/victoria-emergency-backstop-mechanism/emergency-backstop-mechanism-documents/)
-- [LinkedIn](https://www.linkedin.com/company/jemena)
-- [Sign Up](https://myportal.jemena.com.au/)
-- [Portal](https://myservices.jemena.com.au/edp/login/auth)
-- [Status Page](https://poweroutages.jemena.com.au/)
+- [Sign up](https://myportal.jemena.com.au/)
 - [Support](https://www.jemena.com.au/help-support/)
-- [Privacy Policy](https://www.jemena.com.au/about-us/privacy-policy/)
+- [Blog](https://www.jemena.com.au/about-us/news-media/)
+- [Terms of service](https://www.jemena.com.au/about-us/terms-of-use/)
+- [Privacy policy](https://www.jemena.com.au/about-us/privacy-policy/)
+- [Status](https://poweroutages.jemena.com.au/)
 
-## Maintainers
+## API Evangelist rating
 
-- **Kin Lane** — kin@apievangelist.com
+**Kin Score 28.1** — thin · rubric 0.24.0 · scored 2026-10-17
+
+| Facet | Score |
+|---|---|
+| Discoverability | 73.2 |
+| Contract quality | 0.0 |
+| Contract governance | 18.2 |
+| Operational transparency | 15.8 |
+| Developer ergonomics | 42.9 |
+| Access clarity | 34.2 |
+
+**Agent readiness 5.4** — agent-aware
+
+| Agent-readiness dimension | Result |
+|---|---|
+| Spec Presence | — |
+| Agentic Access | — |
+| Reversibility Documented | — |
+| MCP Server | — |
+| Auth Clarity | bearer (partial credit) |
+| Idempotency | — |
+| Error Semantics | documented (partial credit) |
+| OpenAPI Examples | — |
+| Rate Limit Signal | — |
+| Event Surface Described | — |
+| Agent Skills | — |
+| Well Known Catalog | — |
+| Consent Identity | — |
+| Agent Card | — |
+| Dry Run Mode | — |
+| Delegated Identity | — |
+| Protected Resource Metadata | — |
+| Dynamic Client Registration | — |
+| Agentic Commerce | — |
+
+**Regulatory alignment 20.5** — Energy & Utilities
+
+The rubric is published at [github.com/api-evangelist/kin-score](https://github.com/api-evangelist/kin-score). The per-check breakdown behind these numbers — which checks were earned, partial or missed — along with score history and how this provider compares to its peers, is available at [apis.io/providers/jemena/](https://apis.io/providers/jemena/).
+
+## How this profile is made
+
+API Evangelist profiles a company's public API surface the way a developer would find it: the website, developer portal and documentation, the specifications it publishes, its public repositories, and its pricing, status and changelog pages. From that it derives the properties above — contracts split per API, workflows, schemas, collections, governance rules, plans and rate limits — and scores them against the published [Kin Score rubric](https://github.com/api-evangelist/kin-score).
+
+The artifacts are published on [APIs.io](https://apis.io), not in this repository. This repository is the public record for Jemena: the place to say something is wrong, missing or out of date, and to ask for a re-score or a removal.
+
+## Open an issue
+
+- **Something about this listing** — a wrong description, a missing API, a stale artifact or a question about the rating: [open an issue on this repository](https://github.com/api-evangelist/jemena/issues/new).
+- **A new API, or one that is not in the catalog yet** — [submit it on APIs.io](https://apis.io/add/).
+- **Anything else** — [the APIs.io inbox](https://github.com/api-search/inbox/issues/new) or [info@apievangelist.com](mailto:info@apievangelist.com).
